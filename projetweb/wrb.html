@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Sensor Data</title>
+</head>
+<body>
+    <h1>ESP32 Sensor Data</h1>
+    <div>
+        <p id="temperature">Temperature: Loading...</p>
+        <p id="humidity">Humidity: Loading...</p>
+    </div>
+    <button id="led-button">Turn Off LED</button>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const temperatureElement = document.getElementById("temperature");
+            const humidityElement = document.getElementById("humidity");
+            const ledButton = document.getElementById("led-button");
+
+            // Function to fetch temperature data from GraphQL API
+            function fetchTemperature() {
+                console.log('Fetching temperature...');
+                fetch("http://192.168.137.63:4000/graphql", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        query: `
+                            query {
+                                getTemperature
+                            }
+                        `
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Temperature data received:', data);
+                    if (data.errors) {
+                        console.error('Error fetching temperature data:', data.errors);
+                        return;
+                    }
+                    const temperature = data.data.getTemperature;
+                    temperatureElement.textContent = `Temperature: ${temperature}°C`;
+                })
+                .catch(error => console.error('Error fetching temperature data:', error));
+            }
+
+            // Function to fetch humidity data from GraphQL API
+            function fetchHumidity() {
+                console.log('Fetching humidity...');
+                fetch("http://192.168.137.63:4000/graphql", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        query: `
+                            query {
+                                getHumidity
+                            }
+                        `
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Humidity data received:', data);
+                    if (data.errors) {
+                        console.error('Error fetching humidity data:', data.errors);
+                        return;
+                    }
+                    const humidity = data.data.getHumidity;
+                    humidityElement.textContent = `Humidity: ${humidity}%`;
+                })
+                .catch(error => console.error('Error fetching humidity data:', error));
+            }
+
+            // Function to send request to turn off LED
+            function turnOffLED() {
+                console.log('Turning off LED...');
+                fetch("http://192.168.137.63:4000/graphql", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        query: `
+                            mutation {
+                                setLEDState(state: false)
+                            }
+                        `
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('LED turn off response:', data);
+                    if (data.errors) {
+                        console.error('Error turning off LED:', data.errors);
+                        return;
+                    }
+                    alert("LED turned off successfully");
+                })
+                .catch(error => console.error('Error turning off LED:', error));
+            }
+
+            // Fetch temperature and humidity data initially
+            fetchTemperature();
+            fetchHumidity();
+
+            // Fetch temperature and humidity data every 5 seconds
+            setInterval(fetchTemperature, 5000);
+            setInterval(fetchHumidity, 5000);
+
+            // Add event listener to button
+            ledButton.addEventListener("click", turnOffLED);
+        });
+
+
+
+
+
+
+
+        function sendGraphQLRequest(query) {
+  // Logique pour envoyer la requête GraphQL
+}
+
+// Fonction pour vérifier l'état de l'alerte
+function checkAlert() {
+  // Envoyer une requête GraphQL pour récupérer l'état de l'alerte
+  const query = `
+    query {
+      getAlertState
+    }
+  `;
+
+  sendGraphQLRequest(query)
+    .then(response => {
+      const isAlertTriggered = response.data.getAlertState;
+
+      if (isAlertTriggered) {
+        // Afficher un message d'alerte à l'utilisateur
+        alert("Une alerte a été déclenchée !");
+      }
+    })
+    .catch(error => {
+      console.error('Erreur lors de la récupération de l\'état de l\'alerte:', error);
+    });
+}
+
+
+
+
+
+
+    </script>
+</body>
+</html>
